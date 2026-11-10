@@ -1,7 +1,7 @@
 import AppKit
 import PostinoCore
 
-enum Mode { case summary, reply }
+enum Mode { case summary, reply, rewrite }
 
 @MainActor
 final class Session: ObservableObject {
@@ -9,6 +9,8 @@ final class Session: ObservableObject {
     @Published var mail: Mail?
     @Published var output = ""
     @Published var instructions = ""
+    /// Free text typed by the user for the rewrite mode. Kept between openings of the panel.
+    @Published var draftText = ""
     @Published var busy = false
     @Published var error: String?
     @Published var notice: String?
@@ -25,6 +27,10 @@ final class Session: ObservableObject {
         notice = nil
         replyReady = false
         instructions = ""
+        if mode == .rewrite {
+            mail = nil
+            return
+        }
         do {
             mail = try OutlookBridge.selectedMail()
         } catch {
@@ -45,16 +51,30 @@ final class Session: ObservableObject {
     }
 
     func generate() {
-        guard let mail else { return }
+        let messages: [ChatMessage]
+        switch mode {
+        case .rewrite:
+            let text = draftText.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else {
+                error = tr("Type some text to rewrite first.", "Scrivi prima un testo da riscrivere.")
+                return
+            }
+            messages = Prompts.rewrite(text: text, instructions: instructions,
+                                       limit: Prefs.bodyLimit, personal: Prefs.personal)
+        case .summary:
+            guard let mail else { return }
+            messages = Prompts.summary(mail: mail, limit: Prefs.bodyLimit, personal: Prefs.personal)
+        case .reply:
+            guard let mail else { return }
+            messages = Prompts.reply(mail: mail, instructions: instructions,
+                                     limit: Prefs.bodyLimit, personal: Prefs.personal)
+        }
         cancel()
         output = ""
         error = nil
         notice = nil
         busy = true
-        let messages = mode == .summary
-            ? Prompts.summary(mail: mail, limit: Prefs.bodyLimit, personal: Prefs.personal)
-            : Prompts.reply(mail: mail, instructions: instructions, limit: Prefs.bodyLimit, personal: Prefs.personal)
-        let isReply = mode == .reply
+        let isReply = mode != .summary
         task = Task {
             var raw = ""
             do {

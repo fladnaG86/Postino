@@ -6,11 +6,13 @@ struct ResultView: View {
     /// Read only to redraw when the language changes.
     @AppStorage(PrefKey.language) private var language = "auto"
     @FocusState private var instructionsFocused: Bool
+    @FocusState private var draftFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             header
-            if session.mode == .reply && session.mail != nil { instructionsRow }
+            if session.mode == .rewrite { draftEditor }
+            if session.mode == .rewrite || (session.mode == .reply && session.mail != nil) { instructionsRow }
             content
             if let error = session.error {
                 Text(error).foregroundStyle(.red).font(.callout).textSelection(.enabled)
@@ -22,14 +24,42 @@ struct ResultView: View {
         }
         .padding(14)
         .frame(minWidth: 460, minHeight: 360)
-        .onChange(of: session.mode) { _, mode in instructionsFocused = mode == .reply }
-        .onAppear { instructionsFocused = session.mode == .reply }
+        .onChange(of: session.mode) { _, mode in focus(mode) }
+        .onAppear { focus(session.mode) }
+    }
+
+    private func focus(_ mode: Mode) {
+        instructionsFocused = mode == .reply
+        draftFocused = mode == .rewrite
+    }
+
+    private var title: String {
+        switch session.mode {
+        case .summary: return tr("Summary", "Riassunto")
+        case .reply: return tr("Reply draft", "Bozza di risposta")
+        case .rewrite: return tr("Rewrite text", "Riscrivi testo")
+        }
+    }
+
+    private var draftEditor: some View {
+        TextEditor(text: $session.draftText)
+            .font(.body)
+            .focused($draftFocused)
+            .frame(minHeight: 90, maxHeight: .infinity)
+            .overlay(RoundedRectangle(cornerRadius: 6).stroke(.quaternary))
+            .overlay(alignment: .topLeading) {
+                if session.draftText.isEmpty {
+                    Text(tr("Type or paste your text here…", "Scrivi o incolla qui il tuo testo…"))
+                        .foregroundStyle(.tertiary).padding(.horizontal, 6).padding(.vertical, 1)
+                        .allowsHitTesting(false)
+                }
+            }
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {
-                Text(session.mode == .summary ? tr("Summary", "Riassunto") : tr("Reply draft", "Bozza di risposta")).font(.headline)
+                Text(title).font(.headline)
                 if session.busy { ProgressView().controlSize(.small) }
                 Spacer()
             }
@@ -43,8 +73,11 @@ struct ResultView: View {
 
     private var instructionsRow: some View {
         HStack {
-            TextField(tr("Directions (optional): e.g. accept and propose Thursday",
-                         "Indicazioni (facoltative): es. accetta e proponi giovedì"), text: $session.instructions)
+            TextField(session.mode == .rewrite
+                      ? tr("Directions (optional): e.g. more formal, shorter, in English",
+                           "Indicazioni (facoltative): es. più formale, più breve, in inglese")
+                      : tr("Directions (optional): e.g. accept and propose Thursday",
+                           "Indicazioni (facoltative): es. accetta e proponi giovedì"), text: $session.instructions)
                 .textFieldStyle(.roundedBorder)
                 .focused($instructionsFocused)
                 .onSubmit { session.generate() }
@@ -56,7 +89,7 @@ struct ResultView: View {
 
     private var content: some View {
         Group {
-            if session.mode == .reply {
+            if session.mode != .summary {
                 TextEditor(text: $session.output)
                     .font(.body)
                     .disabled(session.busy)
@@ -87,7 +120,7 @@ struct ResultView: View {
             Button(tr("Copy", "Copia")) { session.copy() }.disabled(session.output.isEmpty)
             if session.mode == .summary {
                 Button(tr("Reply…", "Rispondi…")) { session.switchToReply() }.disabled(session.mail == nil)
-            } else {
+            } else if session.mode == .reply {
                 Button(tr("Open draft in Outlook", "Apri bozza in Outlook")) { session.openDraft() }
                     .disabled(!session.replyReady || session.busy || session.output.isEmpty)
             }
@@ -139,11 +172,12 @@ struct SettingsView: View {
             }
             Section(tr("Shortcuts", "Scorciatoie")) {
                 Text("⌃⌥S  " + tr("Summarize selected mail", "Riassumi mail selezionata")
-                     + "\n⌃⌥R  " + tr("Reply to selected mail", "Rispondi alla mail selezionata"))
+                     + "\n⌃⌥R  " + tr("Reply to selected mail", "Rispondi alla mail selezionata")
+                     + "\n⌃⌥T  " + tr("Rewrite a text", "Riscrivi un testo"))
                     .font(.callout)
             }
         }
         .formStyle(.grouped)
-        .frame(width: 480, height: 620)
+        .frame(width: 480, height: 640)
     }
 }

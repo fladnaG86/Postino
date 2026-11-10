@@ -13,6 +13,7 @@ struct PostinoApp: App {
         MenuBarExtra("Postino", systemImage: "envelope.badge") {
             Button(tr("Summarize selected mail", "Riassumi mail selezionata") + "  ⌃⌥S") { delegate.run(.summary) }
             Button(tr("Reply to selected mail", "Rispondi alla mail selezionata") + "  ⌃⌥R") { delegate.run(.reply) }
+            Button(tr("Rewrite a text…", "Riscrivi un testo…") + "  ⌃⌥T") { delegate.run(.rewrite) }
             Divider()
             Button(tr("Settings…", "Impostazioni…")) { delegate.showSettings() }
             Button(tr("Quit", "Esci")) { NSApp.terminate(nil) }
@@ -30,6 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let mods = controlKey | optionKey
         HotKeys.register(id: 1, keyCode: kVK_ANSI_S, modifiers: mods) { [weak self] in self?.run(.summary) }
         HotKeys.register(id: 2, keyCode: kVK_ANSI_R, modifiers: mods) { [weak self] in self?.run(.reply) }
+        HotKeys.register(id: 3, keyCode: kVK_ANSI_T, modifiers: mods) { [weak self] in self?.run(.rewrite) }
     }
 
     func run(_ mode: Mode) {
@@ -58,7 +60,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func showSettings() {
         if settingsWindow == nil {
-            let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 480, height: 620),
+            let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 480, height: 640),
                              styleMask: [.titled, .closable], backing: .buffered, defer: false)
             w.title = tr("Postino Settings", "Impostazioni Postino")
             w.isReleasedWhenClosed = false

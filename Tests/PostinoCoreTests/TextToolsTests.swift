@@ -68,6 +68,19 @@ final class TextToolsTests: XCTestCase {
         XCTAssertTrue(Prompts.summary(mail: mail, limit: 100, personal: "", lang: .it)[0].content.contains("italiano"))
     }
 
+    func testRewritePrompt() {
+        let plain = Prompts.rewrite(text: "ciao a tutti", instructions: "", limit: 100, personal: "", lang: .it)
+        XCTAssertEqual(plain.count, 2)
+        XCTAssertTrue(plain[1].content.contains("Testo da riscrivere:\n\nciao a tutti"))
+        XCTAssertTrue(plain[1].content.contains("chiaro, corretto e naturale"))
+        let directed = Prompts.rewrite(text: "hello", instructions: " more formal ", limit: 100,
+                                       personal: "sign M.", lang: .en)
+        XCTAssertTrue(directed[0].content.contains("User preferences: sign M."))
+        XCTAssertTrue(directed[1].content.contains("Directions for the rewrite: more formal"))
+        XCTAssertTrue(Prompts.rewrite(text: String(repeating: "x", count: 50), instructions: "", limit: 10,
+                                      personal: "", lang: .en)[1].content.contains("text truncated"))
+    }
+
     func testLanguageFromSystemPreference() {
         XCTAssertEqual(Lang.from(preferred: ["it-IT", "en-US"]), .it)
         XCTAssertEqual(Lang.from(preferred: ["de-DE", "it-IT"]), .en)

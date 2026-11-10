@@ -36,6 +36,10 @@ Nothing is installed into Outlook and Outlook itself is not modified.
 3. For a reply you can type optional directions ("accept and propose Thursday"), edit the generated
    text, then press **Open draft in Outlook**.
 
+4. `⌃⌥T` (or **Rewrite a text…** in the menu) opens a box for free text, with no mail involved:
+   type or paste anything, add optional directions ("more formal", "shorter", "in English"), and the
+   model rewrites it. Edit the result and copy it wherever you need.
+
 On first use macOS asks permission to let Postino control Microsoft Outlook: allow it.
 
 The interface is available in English and Italian. It follows the language of your Mac, and you can
@@ -124,6 +128,10 @@ Non viene installato nulla dentro Outlook e Outlook non viene modificato.
 2. `⌃⌥S` per il riassunto, `⌃⌥R` per la risposta (oppure dal menu dell'icona a busta).
 3. Per la risposta puoi scrivere indicazioni facoltative ("accetta e proponi giovedì"), correggere
    il testo generato e poi premere **Apri bozza in Outlook**.
+
+4. `⌃⌥T` (o **Riscrivi un testo…** dal menu) apre un riquadro per testo libero, senza passare da
+   una mail: scrivi o incolla quello che vuoi, aggiungi indicazioni facoltative ("più formale", "più
+   breve", "in inglese") e il modello lo riscrive. Correggi il risultato e copialo dove ti serve.
 
 Al primo uso macOS chiede il permesso di controllare Microsoft Outlook: va concesso.
 
