@@ -13,7 +13,7 @@ enum LLMClient {
             let task = Task {
                 do {
                     guard let url = TextTools.chatCompletionsURL(base: Prefs.baseURL) else {
-                        throw LLMError(message: "URL endpoint non valido: \(Prefs.baseURL)")
+                        throw LLMError(message: tr("Invalid endpoint URL", "URL endpoint non valido") + ": \(Prefs.baseURL)")
                     }
                     var req = URLRequest(url: url)
                     req.httpMethod = "POST"
@@ -31,7 +31,7 @@ enum LLMClient {
 
                     let (bytes, response) = try await URLSession.shared.bytes(for: req)
                     guard let http = response as? HTTPURLResponse else {
-                        throw LLMError(message: "Risposta non HTTP")
+                        throw LLMError(message: tr("Non-HTTP response", "Risposta non HTTP"))
                     }
                     guard (200..<300).contains(http.statusCode) else {
                         var detail = ""
@@ -39,7 +39,7 @@ enum LLMClient {
                             detail += line
                             if detail.count > 400 { break }
                         }
-                        throw LLMError(message: "HTTP \(http.statusCode) da \(url.host ?? "?"): \(detail)")
+                        throw LLMError(message: "HTTP \(http.statusCode) \(tr("from", "da")) \(url.host ?? "?"): \(detail)")
                     }
                     for try await line in bytes.lines {
                         if let delta = TextTools.deltaFromSSE(line: line) { continuation.yield(delta) }
@@ -47,7 +47,8 @@ enum LLMClient {
                     continuation.finish()
                 } catch let e as URLError where e.code == .cannotConnectToHost || e.code == .timedOut {
                     continuation.finish(throwing: LLMError(
-                        message: "Modello non raggiungibile su \(Prefs.baseURL). Server LLM acceso?"))
+                        message: tr("Model not reachable at \(Prefs.baseURL). Is the LLM server running?",
+                                    "Modello non raggiungibile su \(Prefs.baseURL). Server LLM acceso?")))
                 } catch {
                     continuation.finish(throwing: error)
                 }

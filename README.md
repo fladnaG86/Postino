@@ -34,12 +34,13 @@ Nothing is installed into Outlook and Outlook itself is not modified.
 1. Select a mail in Outlook.
 2. `⌃⌥S` for a summary, `⌃⌥R` for a reply (or use the envelope icon in the menu bar).
 3. For a reply you can type optional directions ("accept and propose Thursday"), edit the generated
-   text, then press **Apri bozza in Outlook** (open draft in Outlook).
+   text, then press **Open draft in Outlook**.
 
 On first use macOS asks permission to let Postino control Microsoft Outlook: allow it.
 
-The interface is currently in Italian. Summaries are written in Italian; replies are written in the
-language of the mail you received.
+The interface is available in English and Italian. It follows the language of your Mac, and you can
+force one in Settings. Summaries are written in the interface language; replies are always written
+in the language of the mail you received.
 
 ## Quick install
 
@@ -68,8 +69,8 @@ swift test              # unit tests
 
 ## Settings
 
-Menu → **Impostazioni…**: endpoint, model name, API key (stored in the Keychain), reply-all,
-personal preferences for tone and signature, maximum number of mail characters sent to the model.
+Menu → **Settings…**: endpoint, model name, API key (stored in the Keychain), reply-all, personal
+preferences for tone and signature, maximum number of mail characters sent to the model, language.
 
 ## Limits
 
@@ -126,7 +127,9 @@ Non viene installato nulla dentro Outlook e Outlook non viene modificato.
 
 Al primo uso macOS chiede il permesso di controllare Microsoft Outlook: va concesso.
 
-I riassunti sono in italiano; le risposte nella lingua della mail ricevuta.
+L'interfaccia è in italiano e in inglese: segue la lingua del Mac e puoi forzarne una nelle
+Impostazioni. I riassunti sono nella lingua dell'interfaccia; le risposte sempre nella lingua della
+mail ricevuta.
 
 ## Installazione rapida
 
@@ -156,7 +159,8 @@ swift test              # test unitari
 ## Impostazioni
 
 Dal menu → **Impostazioni…**: endpoint, modello, chiave API (salvata nel Portachiavi), rispondi a
-tutti, preferenze personali su tono e firma, limite di caratteri della mail inviati al modello.
+tutti, preferenze personali su tono e firma, limite di caratteri della mail inviati al modello,
+lingua.
 
 ## Limiti
 

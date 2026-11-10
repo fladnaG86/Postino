@@ -31,9 +31,9 @@ public enum TextTools {
     }
 
     /// Cuts very long mail bodies so they fit the model context.
-    public static func truncate(_ s: String, limit: Int) -> String {
+    public static func truncate(_ s: String, limit: Int, lang: Lang = .current) -> String {
         guard limit > 0, s.count > limit else { return s }
-        return String(s.prefix(limit)) + "\n[... testo troncato ...]"
+        return String(s.prefix(limit)) + "\n" + tr("[... text truncated ...]", "[... testo troncato ...]", lang: lang)
     }
 
     /// Removes <think>…</think> blocks some local models emit, including an unfinished one.

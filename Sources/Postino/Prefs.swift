@@ -7,6 +7,7 @@ enum PrefKey {
     static let personal = "personal"
     static let bodyLimit = "bodyLimit"
     static let replyAll = "replyAll"
+    static let language = "language"
 }
 
 enum Prefs {

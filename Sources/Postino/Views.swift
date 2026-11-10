@@ -1,7 +1,10 @@
+import PostinoCore
 import SwiftUI
 
 struct ResultView: View {
     @ObservedObject var session: Session
+    /// Read only to redraw when the language changes.
+    @AppStorage(PrefKey.language) private var language = "auto"
     @FocusState private var instructionsFocused: Bool
 
     var body: some View {
@@ -26,12 +29,12 @@ struct ResultView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {
-                Text(session.mode == .summary ? "Riassunto" : "Bozza di risposta").font(.headline)
+                Text(session.mode == .summary ? tr("Summary", "Riassunto") : tr("Reply draft", "Bozza di risposta")).font(.headline)
                 if session.busy { ProgressView().controlSize(.small) }
                 Spacer()
             }
             if let mail = session.mail {
-                Text(mail.subject.isEmpty ? "(senza oggetto)" : mail.subject).lineLimit(1)
+                Text(mail.subject.isEmpty ? tr("(no subject)", "(senza oggetto)") : mail.subject).lineLimit(1)
                 Text(mail.senderName.isEmpty ? mail.senderAddress : "\(mail.senderName) <\(mail.senderAddress)>")
                     .font(.caption).foregroundStyle(.secondary).lineLimit(1)
             }
@@ -40,11 +43,12 @@ struct ResultView: View {
 
     private var instructionsRow: some View {
         HStack {
-            TextField("Indicazioni (facoltative): es. accetta e proponi giovedì", text: $session.instructions)
+            TextField(tr("Directions (optional): e.g. accept and propose Thursday",
+                         "Indicazioni (facoltative): es. accetta e proponi giovedì"), text: $session.instructions)
                 .textFieldStyle(.roundedBorder)
                 .focused($instructionsFocused)
                 .onSubmit { session.generate() }
-            Button(session.replyReady ? "Rigenera" : "Genera") { session.generate() }
+            Button(session.replyReady ? tr("Regenerate", "Rigenera") : tr("Generate", "Genera")) { session.generate() }
                 .keyboardShortcut(.defaultAction)
                 .disabled(session.busy)
         }
@@ -69,7 +73,7 @@ struct ResultView: View {
         .overlay(RoundedRectangle(cornerRadius: 6).stroke(.quaternary))
         .overlay {
             if session.busy && session.output.isEmpty {
-                Text("Il modello sta ragionando…").foregroundStyle(.secondary)
+                Text(tr("The model is thinking…", "Il modello sta ragionando…")).foregroundStyle(.secondary)
             }
         }
     }
@@ -77,14 +81,14 @@ struct ResultView: View {
     private var buttons: some View {
         HStack {
             if session.busy {
-                Button("Ferma") { session.cancel() }
+                Button(tr("Stop", "Ferma")) { session.cancel() }
             }
             Spacer()
-            Button("Copia") { session.copy() }.disabled(session.output.isEmpty)
+            Button(tr("Copy", "Copia")) { session.copy() }.disabled(session.output.isEmpty)
             if session.mode == .summary {
-                Button("Rispondi…") { session.switchToReply() }.disabled(session.mail == nil)
+                Button(tr("Reply…", "Rispondi…")) { session.switchToReply() }.disabled(session.mail == nil)
             } else {
-                Button("Apri bozza in Outlook") { session.openDraft() }
+                Button(tr("Open draft in Outlook", "Apri bozza in Outlook")) { session.openDraft() }
                     .disabled(!session.replyReady || session.busy || session.output.isEmpty)
             }
         }
@@ -97,35 +101,49 @@ struct SettingsView: View {
     @AppStorage(PrefKey.personal) private var personal = ""
     @AppStorage(PrefKey.bodyLimit) private var bodyLimit = Prefs.defaultBodyLimit
     @AppStorage(PrefKey.replyAll) private var replyAll = false
+    @AppStorage(PrefKey.language) private var language = "auto"
     @State private var apiKey = KeychainStore.read()
     @State private var saved = false
 
     var body: some View {
         Form {
-            Section("Modello") {
-                TextField("Endpoint (OpenAI-compatibile)", text: $baseURL)
-                TextField("Modello", text: $model)
-                SecureField("Chiave API (vuota per LLM locale)", text: $apiKey)
+            Section(tr("Model", "Modello")) {
+                TextField(tr("Endpoint (OpenAI-compatible)", "Endpoint (OpenAI-compatibile)"), text: $baseURL)
+                TextField(tr("Model", "Modello"), text: $model)
+                SecureField(tr("API key (empty for a local LLM)", "Chiave API (vuota per LLM locale)"), text: $apiKey)
                 HStack {
-                    Button("Salva chiave nel Portachiavi") { saved = KeychainStore.write(apiKey) }
-                    if saved { Text("Salvata").foregroundStyle(.secondary) }
+                    Button(tr("Save key to Keychain", "Salva chiave nel Portachiavi")) { saved = KeychainStore.write(apiKey) }
+                    if saved { Text(tr("Saved", "Salvata")).foregroundStyle(.secondary) }
                 }
-                Text("Locale: http://127.0.0.1:8001/v1 (llama.cpp) o http://127.0.0.1:11434/v1 (Ollama). Con un endpoint remoto il testo delle mail esce dal Mac.")
+                Text(tr("Local: http://127.0.0.1:8001/v1 (llama.cpp) or http://127.0.0.1:11434/v1 (Ollama). With a remote endpoint the mail text leaves your Mac.",
+                        "Locale: http://127.0.0.1:8001/v1 (llama.cpp) o http://127.0.0.1:11434/v1 (Ollama). Con un endpoint remoto il testo delle mail esce dal Mac."))
                     .font(.caption).foregroundStyle(.secondary)
             }
-            Section("Risposte") {
-                Toggle("Rispondi a tutti", isOn: $replyAll)
-                TextField("Preferenze personali (tono, firma…)", text: $personal, axis: .vertical)
+            Section(tr("Replies", "Risposte")) {
+                Toggle(tr("Reply to all", "Rispondi a tutti"), isOn: $replyAll)
+                TextField(tr("Personal preferences (tone, signature…)", "Preferenze personali (tono, firma…)"),
+                          text: $personal, axis: .vertical)
                     .lineLimit(2...5)
-                Stepper("Massimo caratteri mail inviati al modello: \(bodyLimit)",
+                Stepper(tr("Maximum mail characters sent to the model", "Massimo caratteri mail inviati al modello") + ": \(bodyLimit)",
                         value: $bodyLimit, in: 2000...60000, step: 2000)
             }
-            Section("Scorciatoie") {
-                Text("⌃⌥S  Riassumi mail selezionata\n⌃⌥R  Rispondi alla mail selezionata")
+            Section(tr("Language", "Lingua")) {
+                Picker(tr("Interface and summaries", "Interfaccia e riassunti"), selection: $language) {
+                    Text(tr("System", "Sistema")).tag("auto")
+                    Text("English").tag("en")
+                    Text("Italiano").tag("it")
+                }
+                Text(tr("Replies are always written in the language of the received mail.",
+                        "Le risposte sono sempre scritte nella lingua della mail ricevuta."))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section(tr("Shortcuts", "Scorciatoie")) {
+                Text("⌃⌥S  " + tr("Summarize selected mail", "Riassumi mail selezionata")
+                     + "\n⌃⌥R  " + tr("Reply to selected mail", "Rispondi alla mail selezionata"))
                     .font(.callout)
             }
         }
         .formStyle(.grouped)
-        .frame(width: 480, height: 520)
+        .frame(width: 480, height: 620)
     }
 }

@@ -64,7 +64,7 @@ final class Session: ObservableObject {
                 }
                 if Task.isCancelled { return }
                 if self.output.isEmpty {
-                    self.error = "Il modello non ha restituito testo."
+                    self.error = tr("The model returned no text.", "Il modello non ha restituito testo.")
                 } else if isReply {
                     self.replyReady = true
                 }
@@ -86,7 +86,8 @@ final class Session: ObservableObject {
         guard let mail, !output.isEmpty else { return }
         do {
             try OutlookBridge.openReplyDraft(to: mail.id, text: output, replyAll: Prefs.replyAll)
-            notice = "Bozza aperta in Outlook. Controlla e invia tu."
+            notice = tr("Draft opened in Outlook. Review it and send it yourself.",
+                        "Bozza aperta in Outlook. Controlla e invia tu.")
         } catch {
             self.error = error.localizedDescription
         }
@@ -95,6 +96,6 @@ final class Session: ObservableObject {
     func copy() {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(output, forType: .string)
-        notice = "Copiato."
+        notice = tr("Copied.", "Copiato.")
     }
 }

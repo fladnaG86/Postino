@@ -1,18 +1,21 @@
 import AppKit
 import Carbon.HIToolbox
+import PostinoCore
 import SwiftUI
 
 @main
 struct PostinoApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
+    /// Read only to rebuild the menu when the language changes.
+    @AppStorage(PrefKey.language) private var language = "auto"
 
     var body: some Scene {
         MenuBarExtra("Postino", systemImage: "envelope.badge") {
-            Button("Riassumi mail selezionata  ⌃⌥S") { delegate.run(.summary) }
-            Button("Rispondi alla mail selezionata  ⌃⌥R") { delegate.run(.reply) }
+            Button(tr("Summarize selected mail", "Riassumi mail selezionata") + "  ⌃⌥S") { delegate.run(.summary) }
+            Button(tr("Reply to selected mail", "Rispondi alla mail selezionata") + "  ⌃⌥R") { delegate.run(.reply) }
             Divider()
-            Button("Impostazioni…") { delegate.showSettings() }
-            Button("Esci") { NSApp.terminate(nil) }
+            Button(tr("Settings…", "Impostazioni…")) { delegate.showSettings() }
+            Button(tr("Quit", "Esci")) { NSApp.terminate(nil) }
         }
     }
 }
@@ -55,14 +58,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func showSettings() {
         if settingsWindow == nil {
-            let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 480, height: 520),
+            let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 480, height: 620),
                              styleMask: [.titled, .closable], backing: .buffered, defer: false)
-            w.title = "Impostazioni Postino"
+            w.title = tr("Postino Settings", "Impostazioni Postino")
             w.isReleasedWhenClosed = false
             w.contentView = NSHostingView(rootView: SettingsView())
             w.center()
             settingsWindow = w
         }
+        settingsWindow?.title = tr("Postino Settings", "Impostazioni Postino")
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow?.makeKeyAndOrderFront(nil)
     }
