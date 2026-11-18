@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/icon.png" width="160" alt="Postino icon"></p>
+
 # Postino
 
 **English** · [Italiano](#italiano)

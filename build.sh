@@ -8,6 +8,8 @@ APP="dist/Postino.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
 cp ".build/release/Postino" "$APP/Contents/MacOS/Postino"
+mkdir -p "$APP/Contents/Resources"
+cp "Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -17,6 +19,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundleName</key><string>Postino</string>
     <key>CFBundleIdentifier</key><string>it.postino.app</string>
     <key>CFBundleExecutable</key><string>Postino</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>0.3.0</string>
     <key>CFBundleVersion</key><string>3</string>
